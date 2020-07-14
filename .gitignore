@@ -3,3 +3,8 @@
 .vscode/
 Mask_RCNN/
 outputs/
+logs/
+data/
+checkpoints/
+tmp/
+*.pth
