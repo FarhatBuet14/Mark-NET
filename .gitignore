@@ -9,3 +9,4 @@ checkpoints/
 tmp/
 *.pth
 *.pyc
+*.ipynb_checkpoints/
