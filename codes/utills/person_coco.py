@@ -38,12 +38,12 @@ from coco import coco
 config = coco.CocoConfig()
 COCO_DIR = "/media/farhat/Farhat_SSD/MarkNET" + "/data/coco/train"
 
-# data = pd.read_csv(COCO_DIR + "/annotations/person_IDs.csv")
-# person_ids = list(data.iloc[:, 1].values)
+data = pd.read_csv(COCO_DIR + "/annotations/person_IDs.csv")
+person_ids = list(data.iloc[:, 1].values)
 
 # Load dataset
 dataset = coco.CocoDataset()
-dataset.load_coco(COCO_DIR, subset= "train", year="2017") # , class_ids = [1], image_ids=person_ids
+dataset.load_coco(COCO_DIR, subset= "train", year="2017", class_ids = [1], image_ids=person_ids)
 
 # Must call before using the dataset
 dataset.prepare()
@@ -51,21 +51,60 @@ dataset.prepare()
 print("Image Count: {}".format(len(dataset.image_ids)))
 print("Class Count: {}".format(dataset.num_classes))
 
-person_count = 0
+# #--- 1-Person Selection 
+# person_count = 0
+# person_ids = []
+# for i in tqdm(range(len(dataset.image_ids))):
+#     image_id = dataset.image_ids[i]
+#     _, class_ids = dataset.load_mask(image_id)
+#     if(Counter(class_ids)[1]==1): 
+#         person_count += 1
+#         person_ids.append(dataset.image_info[image_id]["id"])
+#         # origin = dataset.image_info[image_id]["path"]
+#         # shutil.copy(origin, origin.replace("2017", "_person"))
+
+# print(f'Total person count - {person_count} images')
+
+# numpy_data = np.array([np.array(person_ids)]).transpose()
+# df = pd.DataFrame(data=numpy_data, columns=["Person_ID"])
+# df.to_csv(COCO_DIR + "/annotations/person_IDs.csv")
+
+#--- 1-Person, 30-area Selection 
+from collections import Counter
+import cv2
+from tqdm import tqdm
+person_area_count = 0
 person_ids = []
+img_ids = []
 for i in tqdm(range(len(dataset.image_ids))):
     image_id = dataset.image_ids[i]
-    _, class_ids = dataset.load_mask(image_id)
+    mask, class_ids = dataset.load_mask(image_id)
     if(Counter(class_ids)[1]==1): 
-        person_count += 1
-        person_ids.append(dataset.image_info[image_id]["id"])
-        # origin = dataset.image_info[image_id]["path"]
-        # shutil.copy(origin, origin.replace("2017", "_person"))
+        total_area = dataset.image_info[image_id]['height'] * dataset.image_info[image_id]['width']
+        area = int((sum(sum(mask * 1))[0] / total_area * 100))
+        if(area > 30):
+            person_area_count += 1
+            person_ids.append(dataset.image_info[image_id]["id"])
+            img_ids.append(image_id)
+            origin = dataset.image_info[image_id]["path"]
+            shutil.copy(origin, origin.replace("train2017", "train_person_area"))
 
-print(f'Total person count - {person_count} images')
+#--- Save outputs _masks        
+import matplotlib.pyplot as plt
+import cv2
+from datetime import datetime
+from collections import Counter
+out_dir = os.path.join(ROOT_DIR, "output/mask/" + str(datetime.now())[:-10].replace(":", "_"))
+if not os.path.exists(out_dir): os.makedirs(out_dir)
 
-numpy_data = np.array([np.array(person_ids)]).transpose()
-df = pd.DataFrame(data=numpy_data, columns=["Person_ID"])
-df.to_csv(COCO_DIR + "/annotations/person_IDs.csv")
+for i in tqdm(range(len(img_ids))):
+    image_id = img_ids[i]
+    image = dataset.load_image(image_id)
+    mask, class_ids = dataset.load_mask(image_id)
+    mask = mask[:, :, 0] * 1
+    mask =np.moveaxis(np.stack([mask, mask, mask]), 0, 2)
+    masked_image = image * mask
+    name = dataset.image_info[image_id]["path"][-16:-4]
+    saved = cv2.imwrite(f'{out_dir}/{name}_person.jpg', masked_image)
 
 print("Finished..")
