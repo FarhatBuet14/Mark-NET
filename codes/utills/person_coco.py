@@ -32,8 +32,9 @@ from mrcnn.model import log
 
 
 # To find local version - https://github.com/matterport/Mask_RCNN
-sys.path.append(os.path.join(ROOT_DIR, "Mask_RCNN/samples/coco/"))  
-import coco
+# sys.path.append(os.path.join(ROOT_DIR, "Mask_RCNN/samples/coco/"))
+# sys.path.append(os.path.join(ROOT_DIR, "Mask_RCNN/samples/coco/"))
+from coco import coco
 config = coco.CocoConfig()
 COCO_DIR = "/media/farhat/Farhat_SSD/MarkNET" + "/data/coco/train"
 
