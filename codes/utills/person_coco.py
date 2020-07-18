@@ -36,14 +36,15 @@ from mrcnn.model import log
 # sys.path.append(os.path.join(ROOT_DIR, "Mask_RCNN/samples/coco/"))
 from coco import coco
 config = coco.CocoConfig()
-COCO_DIR = "/media/farhat/Farhat_SSD/MarkNET" + "/data/coco/train"
+data_type = "val" #train #test
+COCO_DIR = "/media/farhat/Farhat_SSD/MarkNET" + "/data/coco/" + data_type
 
-data = pd.read_csv(COCO_DIR + "/annotations/person_IDs.csv")
+data = pd.read_csv(COCO_DIR + "/annotations/1person_IDs.csv")
 person_ids = list(data.iloc[:, 1].values)
 
 # Load dataset
 dataset = coco.CocoDataset()
-dataset.load_coco(COCO_DIR, subset= "train", year="2017", class_ids = [1], image_ids=person_ids)
+dataset.load_coco(COCO_DIR, subset= data_type, year="2017", class_ids = [1], image_ids=person_ids)
 
 # Must call before using the dataset
 dataset.prepare()
@@ -51,28 +52,29 @@ dataset.prepare()
 print("Image Count: {}".format(len(dataset.image_ids)))
 print("Class Count: {}".format(dataset.num_classes))
 
-# #--- 1-Person Selection 
+#--- 1-Person Selection 
 # person_count = 0
 # person_ids = []
+# img_ids = []
 # for i in tqdm(range(len(dataset.image_ids))):
 #     image_id = dataset.image_ids[i]
 #     _, class_ids = dataset.load_mask(image_id)
 #     if(Counter(class_ids)[1]==1): 
 #         person_count += 1
 #         person_ids.append(dataset.image_info[image_id]["id"])
-#         # origin = dataset.image_info[image_id]["path"]
-#         # shutil.copy(origin, origin.replace("2017", "_person"))
+#         img_ids.append(image_id)
+#         origin = dataset.image_info[image_id]["path"]
+#         move = origin.replace(data_type + "2017", data_type + "_person")
+#         if(not os.path.exists(move[:-16])): os.mkdir(move[:-16])
+#         shutil.copy(origin, move)
 
 # print(f'Total person count - {person_count} images')
 
 # numpy_data = np.array([np.array(person_ids)]).transpose()
 # df = pd.DataFrame(data=numpy_data, columns=["Person_ID"])
-# df.to_csv(COCO_DIR + "/annotations/person_IDs.csv")
+# df.to_csv(COCO_DIR + "/annotations/1person_IDs.csv")
 
 #--- 1-Person, 30-area Selection 
-from collections import Counter
-import cv2
-from tqdm import tqdm
 person_area_count = 0
 person_ids = []
 img_ids = []
@@ -87,7 +89,15 @@ for i in tqdm(range(len(dataset.image_ids))):
             person_ids.append(dataset.image_info[image_id]["id"])
             img_ids.append(image_id)
             origin = dataset.image_info[image_id]["path"]
-            shutil.copy(origin, origin.replace("train2017", "train_person_area"))
+            move = origin.replace(data_type + "2017", data_type + "_person_area")
+            if(not os.path.exists(move[:-16])): os.mkdir(move[:-16])
+            shutil.copy(origin, move)
+
+print(f'Total person-area count - {person_area_count} images')
+
+numpy_data = np.array([np.array(person_ids)]).transpose()
+df = pd.DataFrame(data=numpy_data, columns=["Person_ID"])
+df.to_csv(COCO_DIR + "/annotations/1person_30area_IDs.csv")
 
 #--- Save outputs _masks        
 import matplotlib.pyplot as plt
