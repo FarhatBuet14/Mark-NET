@@ -104,7 +104,7 @@ import matplotlib.pyplot as plt
 import cv2
 from datetime import datetime
 from collections import Counter
-out_dir = os.path.join(ROOT_DIR, "output/mask/" + str(datetime.now())[:-10].replace(":", "_"))
+out_dir = os.path.join(ROOT_DIR, "outputs/mask/" + str(datetime.now())[:-10].replace(":", "_"))
 if not os.path.exists(out_dir): os.makedirs(out_dir)
 
 for i in tqdm(range(len(img_ids))):
