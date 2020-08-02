@@ -64,7 +64,7 @@ def get_mark_dicts(data_type):
                 "iscrowd": anno["iscrowd"],
                 "bbox": anno["bbox"],
                 "bbox_mode": BoxMode.XYWH_ABS,
-                "segmentation": anno["segmentation"],
+                # "segmentation": anno["segmentation"],
                 "category_id": anno["category_id"],
             }
             objs.append(obj)
@@ -76,16 +76,16 @@ def get_mark_dicts(data_type):
 
 for d in ["train", "val"]:
     DatasetCatalog.register("mark_" + d, lambda d=d: get_mark_dicts(d))
-    MetadataCatalog.get("mark_" + d).set(thing_classes=["person"])
+    MetadataCatalog.get("mark_" + d).set(thing_classes=['BG', 'person'])
 mark_metadata = MetadataCatalog.get("mark_train")
 
-# dataset_dicts = get_mark_dicts("train")
-# for d in random.sample(dataset_dicts, 3):
-#     img = cv2.imread(d["file_name"])
-#     visualizer = Visualizer(img[:, :, ::-1], metadata=mark_metadata, scale=0.5)
-#     out = visualizer.draw_dataset_dict(d)
-#     plt.imshow(out.get_image()[:, :, ::-1])
-#     plt.show()
+dataset_dicts = get_mark_dicts("train")
+for d in random.sample(dataset_dicts, 3):
+    img = cv2.imread(d["file_name"])
+    visualizer = Visualizer(img[:, :, ::-1], metadata=mark_metadata, scale=0.5)
+    out = visualizer.draw_dataset_dict(d)
+    plt.imshow(out.get_image()[:, :, ::-1])
+    plt.show()
 
 from detectron2.engine import DefaultTrainer
 
@@ -112,6 +112,14 @@ cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_0034999.pth")
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7   # set a custom testing threshold for this model
 cfg.DATASETS.TEST = ("mark_val", )
 predictor = DefaultPredictor(cfg)
+
+im = cv2.imread("./input.jpg")
+outputs = predictor(im)
+
+v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1.2)
+out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+plt.imshow(out.get_image()[:, :, ::-1])
+plt.show()
 
 from detectron2.utils.visualizer import ColorMode
 dataset_dicts = get_mark_dicts("val")
