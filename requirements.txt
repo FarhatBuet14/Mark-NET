@@ -43,7 +43,7 @@ googleapis-common-protos==1.52.0
 grpcio==1.30.0
 h5py==2.10.0
 hdfs==2.5.8
-httplib2==0.17.4
+httplib2==0.18.0
 idna==2.10
 imageio==2.9.0
 imgaug==0.4.0
