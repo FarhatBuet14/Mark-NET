@@ -5,7 +5,7 @@ content/
 outputs/
 logs/
 data/
-checkpoints/
+models/pretrained/
 tmp/
 *.pth
 *.pyc
