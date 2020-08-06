@@ -3,6 +3,7 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+from PIL import Image
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
@@ -32,11 +33,12 @@ print("Class Count: {}".format(dataset.num_classes))
 for i, info in enumerate(dataset.class_info):
     print("{:3}. {:50}".format(i, info['name']))
 
-
 mark_dir = ROOT_DIR + "/data/marks/"
 marks = []
+pi_marks = []
 for file in os.listdir(mark_dir):
     marks.append(cv.imread(mark_dir + file, 0))
+    pi_marks.append(Image.open(mark_dir + file))
 
 index_mark = 0
 
@@ -87,7 +89,7 @@ for i in range(len(total_images)):
     BLUE = [255,0,0]
 
     fg = marks[index_mark]
-    
+    fg_pi = pi_marks[index_mark].copy()
     
     rows, cols = fg.shape[:2]
 
@@ -100,6 +102,7 @@ for i in range(len(total_images)):
 
     bg = cv.imread(path)
     bgCopy = bg.copy()
+    bg_pi = Image.open(path).copy()
 
     while True:
         cv.imshow('draw', bg)
@@ -108,10 +111,16 @@ for i in range(len(total_images)):
         if k == 27 & 0xFF:
             points.append(point)
             paths.append(path)
-            point = []
             count += 1
             print("done - " + str(count))
             cv.destroyAllWindows()
+            # Put the marks on selected points
+            for p in np.array(point).reshape((-1, 2)):
+                cox, coy = p
+                bg_pi.paste(fg_pi, (cox, coy), fg_pi)
+            bg_pi.show()
+            bg_pi.save(path.replace("_masks", "_masks_marks"))
+            point = []
             break
     
         elif k == 32:
@@ -121,40 +130,7 @@ for i in range(len(total_images)):
     if k == 32:
         break
 
-points = np.array(points)
-
 # ---- Save data
 np.savez(COCO_DIR + 'marks_point_' + data_type + '.npz',
         manual_points = points,
         paths = paths)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
