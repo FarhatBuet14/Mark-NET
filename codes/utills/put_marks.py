@@ -16,7 +16,7 @@ from mrcnn import utils
 
 from coco import coco
 config = coco.CocoConfig()
-data_type = "val" #val #test
+data_type = "train" #val #test
 COCO_DIR = "/media/farhat/Farhat_SSD/MarkNET" + "/data/coco/" + data_type
 
 
@@ -52,21 +52,28 @@ for folder in os.listdir(mark_dir):
 total_images = [info["path"].replace("2017/", "_person_area_face_masks/") for info in dataset.image_info]
 total_data = len(total_images)
 
-# --- Splitting Marks
-tot_mark = 5
-img_per_mark = (total_data // tot_mark) + 1
-details = []
-for i in range(tot_mark):
-    index_mark = i
-    in_start = (i*img_per_mark)
-    if(i==(tot_mark-1)): in_end = total_data
-    else: in_end = (i*img_per_mark + img_per_mark)
-    # print(f'Start - {in_start} End {in_end}')
-    for j in range(in_start, in_end):
-        m = [0, 1, 2, 3, 4]
-        m.remove(index_mark)
-        details.append((j,index_mark, random.randrange(1, 4), 
-                random.choice([True, False]), random.choice(m)))
+if(not os.path.exists(COCO_DIR + '/marks_distribution_' + data_type + '.npz')):
+    # --- Splitting Marks
+    tot_mark = 5
+    img_per_mark = (total_data // tot_mark) + 1
+    details = []
+    for i in range(tot_mark):
+        index_mark = i
+        in_start = (i*img_per_mark)
+        if(i==(tot_mark-1)): in_end = total_data
+        else: in_end = (i*img_per_mark + img_per_mark)
+        # print(f'Start - {in_start} End {in_end}')
+        for j in range(in_start, in_end):
+            m = [0, 1, 2, 3, 4]
+            m.remove(index_mark)
+            details.append((j,index_mark, random.randrange(1, 4), 
+                    random.choice([True, False]), random.choice(m)))
+
+    np.savez(COCO_DIR + '/marks_distribution_' + data_type + '.npz',
+            details = details)
+else:
+    prepapred = np.load(COCO_DIR + '/marks_distribution_' + data_type + '.npz')
+    details = list(prepapred['details'])
 
 indices = []
 for detail in details:
@@ -75,29 +82,22 @@ for detail in details:
     if(detail[3]) : ind.append(detail[4])
     indices.append(ind)
 
+if(os.path.exists(COCO_DIR + '/marks_point_' + data_type + '.npz')):
+    # ---- Load past data
+    prepapred_data = np.load(COCO_DIR + '/marks_point_' + data_type + '.npz', allow_pickle=True)
+    bbox = list(prepapred_data['bbox'])
+    paths = list(prepapred_data['paths'])
+    count = len(paths)
+    for name in paths:
+        if(str(name) in total_images): total_images.remove(str(name))
+    if(total_data - len(total_images) == count): print("Successfully added the past data..")
 
-# from collections import Counter
-# Counter([i[2] for i in details])
-# Counter([i[3] for i in details])
-
-# # ---- Load past data
-# prepapred_data = np.load(COCO_DIR + 'marks_point_' + data_type + '.npz')
-# points = list(prepapred_data['manual_points'])
-# bbox = list(prepapred_data['bbox'])
-# paths = list(prepapred_data['paths'])
-# count = len(points)
-# for name in paths:
-#    if(str(name) in total_images):
-#       total_images.remove(str(name)) 
-# if(total_data - len(total_images) == count):
-#    print("Successfully added the past data")
+else:
+    paths = []
+    count = 0
+    bbox = []
 
 point = []
-paths = []
-points = []
-count = 0
-bbox = []
-
 for i in range(len(total_images)):
 
     def mouse(event,x,y,flags,params):
@@ -132,8 +132,6 @@ for i in range(len(total_images)):
     cv.namedWindow('draw')
     cv.setMouseCallback('draw', mouse)
     
-    # info = dataset.image_info[i]
-    # path = info["path"].replace("2017/", "_person_area_face_masks/")
     path = total_images[i]
 
     bg = cv.imread(path)
@@ -146,15 +144,11 @@ for i in range(len(total_images)):
 
         if (k == 27 & 0xFF) or ((len(point)//2)==len(mark_index)):
             point = np.array(point).reshape((-1, 2))
-            points.append(point)
             paths.append(path)
             count += 1
             print("done - " + str(count))
             cv.destroyAllWindows()
             # Put the marks on selected points
-            # fg = marks[index_mark]
-            # index_list = [i for i in range(0, len(pi_marks))]
-            # fg_pi = pi_marks[index_mark].copy()
             box = []
             for i, m in enumerate(mark_index):
                 fg_pi = pi_marks[m][random.choice([0, 1, 2, 3])].copy()
@@ -180,6 +174,5 @@ for i in range(len(total_images)):
         break
 
 # ---- Save data
-np.savez(COCO_DIR + 'marks_point_' + data_type + '.npz',
-        manual_points = points, bbox = bbox, 
-        paths = paths)
+np.savez(COCO_DIR + '/marks_point_' + data_type + '.npz',
+        bbox = np.array(bbox, dtype=object), paths = paths)
