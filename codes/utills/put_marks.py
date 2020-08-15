@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import pandas as pd
 from PIL import Image
+from resizeimage import resizeimage
 import random
 
 # Root directory of the project
@@ -64,7 +65,8 @@ for i in range(tot_mark):
     for j in range(in_start, in_end):
         m = [0, 1, 2, 3, 4]
         m.remove(index_mark)
-        details.append((j,index_mark, random.randrange(1, 4), random.choice([True, False]), random.choice(m)))
+        details.append((j,index_mark, random.randrange(1, 4), 
+                random.choice([True, False]), random.choice(m)))
 
 indices = []
 for detail in details:
@@ -81,6 +83,7 @@ for detail in details:
 # # ---- Load past data
 # prepapred_data = np.load(COCO_DIR + 'marks_point_' + data_type + '.npz')
 # points = list(prepapred_data['manual_points'])
+# bbox = list(prepapred_data['bbox'])
 # paths = list(prepapred_data['paths'])
 # count = len(points)
 # for name in paths:
@@ -93,6 +96,7 @@ point = []
 paths = []
 points = []
 count = 0
+bbox = []
 
 for i in range(len(total_images)):
 
@@ -141,6 +145,7 @@ for i in range(len(total_images)):
         k = cv.waitKey(1)
 
         if (k == 27 & 0xFF) or ((len(point)//2)==len(mark_index)):
+            point = np.array(point).reshape((-1, 2))
             points.append(point)
             paths.append(path)
             count += 1
@@ -150,13 +155,16 @@ for i in range(len(total_images)):
             # fg = marks[index_mark]
             # index_list = [i for i in range(0, len(pi_marks))]
             # fg_pi = pi_marks[index_mark].copy()
-            
-            point = np.array(point).reshape((-1, 2))
+            box = []
             for i, m in enumerate(mark_index):
                 fg_pi = pi_marks[m][random.choice([0, 1, 2, 3])].copy()
-                cox, coy = point[i]
+                re_size = random.choice([1, 2, 3, 4])
+                fg_pi = resizeimage.resize_thumbnail(fg_pi, [fg_pi.size[0] // re_size, fg_pi.size[1] // re_size])
+                cox, coy = int(point[i][0]), int(point[i][1])
+                box.append([cox, coy, int(fg_pi.size[1]), int(fg_pi.size[0])]) # x, y, h, w
                 bg_pi.paste(fg_pi, (cox, coy), fg_pi)
             
+            bbox.append(box)
             bg_pi.show()
             bg_pi.save(path.replace("_masks", "_masks_marks"))
             
@@ -173,5 +181,5 @@ for i in range(len(total_images)):
 
 # ---- Save data
 np.savez(COCO_DIR + 'marks_point_' + data_type + '.npz',
-        manual_points = points,
+        manual_points = points, bbox = bbox, 
         paths = paths)
