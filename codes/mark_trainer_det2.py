@@ -107,8 +107,8 @@ class CocoTrainer(DefaultTrainer):
 
 # --- Set the Configs
 cfg = get_cfg()
-cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x.yaml"))
-cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x.yaml")
+cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_101_C4_3x.yaml"))
+cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_101_C4_3x.yaml")
 
 cfg.DATASETS.TRAIN = ("mark_train",)
 cfg.DATASETS.TEST = ("mark_val",)
