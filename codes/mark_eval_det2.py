@@ -69,15 +69,9 @@ def create_dataset_dicts(df, classes):
             ymin = int(row.y_min)
             xmax = int(row.x_max)
             ymax = int(row.y_max)
-            poly = [
-                (xmin, ymin), (xmax, ymin),
-                (xmax, ymax), (xmin, ymax)
-            ]
-            poly = list(itertools.chain.from_iterable(poly))
             obj = {
             "bbox": [xmin, ymin, xmax, ymax],
             "bbox_mode": BoxMode.XYXY_ABS,
-            "segmentation": [poly],
             "category_id": classes.index(row.class_name),
             "iscrowd": 0
             }
@@ -106,25 +100,23 @@ class CocoTrainer(DefaultTrainer):
 
 # --- Set the Configs
 cfg = get_cfg()
-cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_101_C4_3x.yaml"))
+cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
 
 cfg.DATASETS.TRAIN = ("mark_train",)
 cfg.DATASETS.TEST = ("mark_val",)
+
 cfg.DATALOADER.NUM_WORKERS = 4
-
-cfg.SOLVER.IMS_PER_BATCH = 1
-cfg.SOLVER.BASE_LR = 0.001
-cfg.SOLVER.WARMUP_ITERS = 1000
+cfg.SOLVER.IMS_PER_BATCH = 4
+cfg.SOLVER.BASE_LR = 0.0125
 cfg.SOLVER.MAX_ITER = 1500
-cfg.SOLVER.STEPS = (1000, 1500)
-cfg.SOLVER.GAMMA = 0.05
-
-cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 2
-cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(classes)
+cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256  
+cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
 cfg.TEST.EVAL_PERIOD = 500
 
 cfg.num_gpus = 1
-cfg.OUTPUT_DIR = OUTPUT_DIR + "2020-09-17 18_02 FasterRCNN"
+cfg.OUTPUT_DIR = OUTPUT_DIR + "2020-09-17 18_49 FasterRCNN FPN Final"
+cfg.MODEL.MASK_ON = False
+
 
 # --- Set Trainer
 trainer = CocoTrainer(cfg)

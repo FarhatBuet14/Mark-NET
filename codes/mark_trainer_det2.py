@@ -70,15 +70,9 @@ def create_dataset_dicts(df, classes):
             ymin = int(row.y_min)
             xmax = int(row.x_max)
             ymax = int(row.y_max)
-            poly = [
-                (xmin, ymin), (xmax, ymin),
-                (xmax, ymax), (xmin, ymax)
-            ]
-            poly = list(itertools.chain.from_iterable(poly))
             obj = {
             "bbox": [xmin, ymin, xmax, ymax],
             "bbox_mode": BoxMode.XYXY_ABS,
-            "segmentation": [poly],
             "category_id": classes.index(row.class_name),
             "iscrowd": 0
             }
@@ -96,13 +90,13 @@ statement_metadata = MetadataCatalog.get("mark_train")
 
 
 # --- Visualizing the Train Dataset Dictionary
-dataset_dicts = create_dataset_dicts(train_df, classes)
-for d in random.sample(dataset_dicts, 3):
-    img = cv2.imread(d["file_name"])
-    visualizer = Visualizer(img[:, :, ::-1], metadata=statement_metadata)
-    vis = visualizer.draw_dataset_dict(d)
-    cv2.imshow("", vis.get_image()[:, :, ::-1])
-    cv2.waitKey()
+# dataset_dicts = create_dataset_dicts(train_df, classes)
+# for d in random.sample(dataset_dicts, 3):
+#     img = cv2.imread(d["file_name"])
+#     visualizer = Visualizer(img[:, :, ::-1], metadata=statement_metadata)
+#     vis = visualizer.draw_dataset_dict(d)
+#     cv2.imshow("", vis.get_image()[:, :, ::-1])
+#     cv2.waitKey()
 
 
 # --- Set our own Trainer (add Evaluator for the test set )
@@ -117,30 +111,28 @@ class CocoTrainer(DefaultTrainer):
 
 # --- Set the Configs
 cfg = get_cfg()
-cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_101_C4_3x.yaml"))
-cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_101_C4_3x.yaml")
+cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
 
 cfg.DATASETS.TRAIN = ("mark_train",)
 cfg.DATASETS.TEST = ("mark_val",)
+
 cfg.DATALOADER.NUM_WORKERS = 4
+cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
 
-cfg.SOLVER.IMS_PER_BATCH = 1
-cfg.SOLVER.BASE_LR = 0.001
-cfg.SOLVER.WARMUP_ITERS = 1000
+cfg.SOLVER.IMS_PER_BATCH = 4
+cfg.SOLVER.BASE_LR = 0.0125
 cfg.SOLVER.MAX_ITER = 1500
-cfg.SOLVER.STEPS = (1000, 1500)
-cfg.SOLVER.GAMMA = 0.05
-
-cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 2
-cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(classes)
+cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256  
+cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
 cfg.TEST.EVAL_PERIOD = 500
 
 cfg.num_gpus = 1
 cfg.OUTPUT_DIR = OUTPUT_DIR + str(datetime.now())[:-10].replace(":", "_")
+cfg.MODEL.MASK_ON = False
 
 # --- Start Training
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-trainer = CocoTrainer(cfg)
+trainer = CocoTrainer(cfg) 
 trainer.resume_or_load(resume=False)
 trainer.train()
 
