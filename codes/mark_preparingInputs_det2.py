@@ -27,6 +27,8 @@ COCO_DIR = "/media/farhat/Farhat_SSD/MarkNET" + "/data/coco/"
 prepapred_data = np.load(COCO_DIR + data_type + '/marks_point_' + data_type + '.npz', allow_pickle=True)
 bbox = list(prepapred_data['bbox'])
 paths = list(prepapred_data['paths'])
+paths = [path.replace("/train_person_area_face_masks/", '/train_person_area_face_masks_marks/') for path in paths]
+    
 
 # --- Test Annotations
 def annotate_image(pth, marks):
@@ -38,8 +40,7 @@ def annotate_image(pth, marks):
 
 aList = [i for i in range(len(paths))]
 for i in random.sample(aList, 10):
-    path = paths[i].replace("/train_person_area_face_masks/", '/train_person_area_face_masks_marks/')
-    img = annotate_image(path, bbox[i])
+    img = annotate_image(paths[i], bbox[i])
     cv2.imshow('ImageWindow', img)
     cv2.waitKey()
 
