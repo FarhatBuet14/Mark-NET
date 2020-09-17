@@ -95,6 +95,16 @@ for d in ["train", "val"]:
 statement_metadata = MetadataCatalog.get("mark_train")
 
 
+# --- Visualizing the Train Dataset Dictionary
+dataset_dicts = create_dataset_dicts(train_df, classes)
+for d in random.sample(dataset_dicts, 3):
+    img = cv2.imread(d["file_name"])
+    visualizer = Visualizer(img[:, :, ::-1], metadata=statement_metadata)
+    vis = visualizer.draw_dataset_dict(d)
+    cv2.imshow("", vis.get_image()[:, :, ::-1])
+    cv2.waitKey()
+
+
 # --- Set our own Trainer (add Evaluator for the test set )
 class CocoTrainer(DefaultTrainer):
     @classmethod
