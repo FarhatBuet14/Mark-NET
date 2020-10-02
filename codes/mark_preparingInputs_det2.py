@@ -69,13 +69,19 @@ for index in tqdm(range(0, len(paths))):
 df = pd.DataFrame(dataset)
 df.to_csv(COCO_DIR + "/marks_annotations.csv", header=True, index=None)
 
-# --- Train-Test Splitting
+# --- Train-Validation-Test Splitting
 unique_files = df.file_name.unique()
-train_files = set(np.random.choice(unique_files, int(len(unique_files) * 0.95), replace=False))
+train_files = set(np.random.choice(unique_files, int(len(unique_files) * 0.70), replace=False))
 train_df = df[df.file_name.isin(train_files)]
 test_df = df[~df.file_name.isin(train_files)]
 
+unique_files = test_df.file_name.unique()
+test_files = set(np.random.choice(unique_files, int(len(unique_files) * 0.50), replace=False))
+tst_df = test_df[df.file_name.isin(test_files)]
+val_df = test_df[~df.file_name.isin(test_files)]
+
 train_df.to_csv(COCO_DIR + "/marks_annotations_train.csv", header=True, index=None)
-test_df.to_csv(COCO_DIR + "/marks_annotations_test.csv", header=True, index=None)
+tst_df.to_csv(COCO_DIR + "/marks_annotations_test.csv", header=True, index=None)
+val_df.to_csv(COCO_DIR + "/marks_annotations_val.csv", header=True, index=None)
 
 print("Finished Prepartion...")
