@@ -47,11 +47,10 @@ OUTPUT_DIR = "/media/farhat/Research/GitHub/Mark-NET/outputs/detectron2/"
 
 
 # --- Load Annotations
-df = pd.read_csv(COCO_DIR + "/marks_annotations.csv")
-train_df = pd.read_csv(COCO_DIR + "/marks_annotations_train.csv")
-val_df = pd.read_csv(COCO_DIR + "/marks_annotations_val.csv")
+train_df = pd.read_csv(COCO_DIR + "/anno/marks_annotations_train.csv")
+val_df = pd.read_csv(COCO_DIR + "/anno/marks_annotations_val.csv")
 
-classes = df.class_name.unique().tolist()
+classes = train_df.class_name.unique().tolist()
 
 # --- Dataset Dictionary for Training
 def create_dataset_dicts(df, classes):
