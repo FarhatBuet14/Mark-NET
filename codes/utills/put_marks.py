@@ -88,6 +88,7 @@ if(os.path.exists(COCO_DIR + '/marks_point_' + data_type + '.npz')):
     bbox = list(prepapred_data['bbox'])
     paths = list(prepapred_data['paths'])
     count = len(paths)
+    indices = indices[count:len(indices)]
     for name in paths:
         if(str(name) in total_images): total_images.remove(str(name))
     if(total_data - len(total_images) == count): print("Successfully added the past data..")
