@@ -59,8 +59,10 @@ for index in tqdm(range(0, len(paths))):
         data['height'] = height
         data["x_min"] = int(round(x))
         data["y_min"] = int(round(y))
-        data["x_max"] = int(round(x+w))
-        data["y_max"] = int(round(y+h))
+        if(round(x+w) > width): data["x_max"] = int(round(width))
+        else: data["x_max"] = int(round(x+w))
+        if(round(y+h) > height): data["y_max"] = int(round(height))
+        else: data["y_max"] = int(round(y+h))
         data['class_name'] = 'mark'
         dataset.append(data)
 
