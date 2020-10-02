@@ -49,7 +49,7 @@ OUTPUT_DIR = "/media/farhat/Research/GitHub/Mark-NET/outputs/detectron2/"
 # --- Load Annotations
 df = pd.read_csv(COCO_DIR + "/marks_annotations.csv")
 train_df = pd.read_csv(COCO_DIR + "/marks_annotations_train.csv")
-test_df = pd.read_csv(COCO_DIR + "/marks_annotations_test.csv")
+val_df = pd.read_csv(COCO_DIR + "/marks_annotations_val.csv")
 
 classes = df.class_name.unique().tolist()
 
@@ -84,7 +84,7 @@ def create_dataset_dicts(df, classes):
 
 # --- Assign the Dictionary
 for d in ["train", "val"]:
-    DatasetCatalog.register("mark_" + d, lambda d=d: create_dataset_dicts(train_df if d == "train" else test_df, classes))
+    DatasetCatalog.register("mark_" + d, lambda d=d: create_dataset_dicts(train_df if d == "train" else val_df, classes))
     MetadataCatalog.get("mark_" + d).set(thing_classes=classes)
 statement_metadata = MetadataCatalog.get("mark_train")
 
