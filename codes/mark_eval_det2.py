@@ -114,7 +114,7 @@ cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
 cfg.TEST.EVAL_PERIOD = 500
 
 cfg.num_gpus = 1
-cfg.OUTPUT_DIR = OUTPUT_DIR + "2020-09-17 18_49 FasterRCNN FPN Final"
+cfg.OUTPUT_DIR = OUTPUT_DIR + "2020-10-03 01_15 after2000"
 cfg.MODEL.MASK_ON = False
 
 
@@ -134,7 +134,8 @@ inference_on_dataset(trainer.model, val_loader, evaluator)
 Annotation_folder = cfg.OUTPUT_DIR + "/annotated_results"
 os.makedirs(Annotation_folder, exist_ok=True)
 test_image_paths = test_df.file_name.unique()
-for clothing_image in test_image_paths:
+for i in tqdm(range(0, len(test_image_paths))):
+    clothing_image = test_image_paths[i]
     file_path = clothing_image
     im = cv2.imread(clothing_image)
     outputs = predictor(im)
