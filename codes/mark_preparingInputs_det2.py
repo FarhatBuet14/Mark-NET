@@ -20,14 +20,14 @@ np.random.seed(RANDOM_SEED)
 #########################################    Start Codes    #########################################
 
 # --- Directories
-data_type = "train" #val #test
+data_type = "val" #val #test
 COCO_DIR = "/media/farhat/Farhat_SSD/MarkNET" + "/data/coco/" 
 
 # --- Load Bounding Boxes
 prepapred_data = np.load(COCO_DIR + data_type + '/marks_point_' + data_type + '.npz', allow_pickle=True)
 bbox = list(prepapred_data['bbox'])
 paths = list(prepapred_data['paths'])
-paths = [path.replace("/train_person_area_face_masks/", '/train_person_area_face_masks_marks/') for path in paths]
+paths = [path.replace("_person_area_face_masks/", '_person_area_face_masks_marks/') for path in paths]
     
 
 # --- Test Annotations
@@ -67,21 +67,18 @@ for index in tqdm(range(0, len(paths))):
         dataset.append(data)
 
 df = pd.DataFrame(dataset)
-df.to_csv(COCO_DIR + "/marks_annotations.csv", header=True, index=None)
 
 # --- Train-Validation-Test Splitting
-unique_files = df.file_name.unique()
-train_files = set(np.random.choice(unique_files, int(len(unique_files) * 0.70), replace=False))
-train_df = df[df.file_name.isin(train_files)]
-test_df = df[~df.file_name.isin(train_files)]
 
-unique_files = test_df.file_name.unique()
-test_files = set(np.random.choice(unique_files, int(len(unique_files) * 0.50), replace=False))
-tst_df = test_df[df.file_name.isin(test_files)]
-val_df = test_df[~df.file_name.isin(test_files)]
+if(data_type == "train"):
+    unique_files = df.file_name.unique()
+    train_files = set(np.random.choice(unique_files, int(len(unique_files) * 0.70), replace=False))
+    train_df = df[df.file_name.isin(train_files)]
+    test_df = df[~df.file_name.isin(train_files)]
+    train_df.to_csv(COCO_DIR + "/anno/marks_annotations_train.csv", header=True, index=None)
+    test_df.to_csv(COCO_DIR + "/anno/marks_annotations_test.csv", header=True, index=None)
 
-train_df.to_csv(COCO_DIR + "/marks_annotations_train.csv", header=True, index=None)
-tst_df.to_csv(COCO_DIR + "/marks_annotations_test.csv", header=True, index=None)
-val_df.to_csv(COCO_DIR + "/marks_annotations_val.csv", header=True, index=None)
+else:
+    df.to_csv(COCO_DIR + "/anno/marks_annotations_" + data_type + ".csv", header=True, index=None)
 
 print("Finished Prepartion...")
