@@ -45,11 +45,10 @@ COCO_DIR = "/media/farhat/Farhat_SSD/MarkNET" + "/data/coco/"
 OUTPUT_DIR = "/media/farhat/Research/GitHub/Mark-NET/outputs/detectron2/"
 
 # --- Load Annotations
-df = pd.read_csv(COCO_DIR + "/marks_annotations.csv")
-train_df = pd.read_csv(COCO_DIR + "/marks_annotations_train.csv")
-test_df = pd.read_csv(COCO_DIR + "/marks_annotations_test.csv")
+train_df = pd.read_csv(COCO_DIR + "/anno/marks_annotations_train.csv")
+test_df = pd.read_csv(COCO_DIR + "/anno/marks_annotations_test.csv")
 
-classes = df.class_name.unique().tolist()
+classes = train_df.class_name.unique().tolist()
 
 
 # --- Dataset Dictionary for Training
@@ -114,12 +113,13 @@ cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
 cfg.TEST.EVAL_PERIOD = 500
 
 cfg.num_gpus = 1
-cfg.OUTPUT_DIR = OUTPUT_DIR + "2020-10-03 01_15 after2000"
+cfg.OUTPUT_DIR = OUTPUT_DIR + "2020-10-03 03_57 afterAll"
 cfg.MODEL.MASK_ON = False
 
 
 # --- Set Trainer
 trainer = CocoTrainer(cfg)
+trainer.resume_or_load(resume=True)
 
 # --- Evaluation Setup
 cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
