@@ -39,7 +39,7 @@ torch.manual_seed(RANDOM_SEED)
 
 #########################################    Start Codes    #########################################
 
-# --- Load Annotations
+# --- Directories
 data_type = "train" #val #test
 COCO_DIR = "/media/farhat/Farhat_SSD/MarkNET" + "/data/coco/"
 OUTPUT_DIR = "/media/farhat/Research/GitHub/Mark-NET/outputs/detectron2/"
@@ -47,6 +47,12 @@ OUTPUT_DIR = "/media/farhat/Research/GitHub/Mark-NET/outputs/detectron2/"
 # --- Load Annotations
 train_df = pd.read_csv(COCO_DIR + "/anno/marks_annotations_train.csv")
 test_df = pd.read_csv(COCO_DIR + "/anno/marks_annotations_test.csv")
+
+# --- Load Bounding Boxes
+prepapred_data = np.load(COCO_DIR + data_type + '/marks_point_' + data_type + '.npz', allow_pickle=True)
+bbox = list(prepapred_data['bbox'])
+paths = list(prepapred_data['paths'])
+paths = [path.replace("_person_area_face_masks/", '_person_area_face_masks_marks/') for path in paths]
 
 classes = train_df.class_name.unique().tolist()
 
@@ -113,7 +119,7 @@ cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
 cfg.TEST.EVAL_PERIOD = 500
 
 cfg.num_gpus = 1
-cfg.OUTPUT_DIR = OUTPUT_DIR + "2020-10-03 03_57 afterAll"
+cfg.OUTPUT_DIR = OUTPUT_DIR + "2020-10-03 23_31"
 cfg.MODEL.MASK_ON = False
 
 
@@ -136,6 +142,7 @@ os.makedirs(Annotation_folder, exist_ok=True)
 test_image_paths = test_df.file_name.unique()
 for i in tqdm(range(0, len(test_image_paths))):
     clothing_image = test_image_paths[i]
+    marks = bbox[paths==clothing_image]
     file_path = clothing_image
     im = cv2.imread(clothing_image)
     outputs = predictor(im)
@@ -150,6 +157,9 @@ for i in tqdm(range(0, len(test_image_paths))):
     v = v.draw_instance_predictions(instances)
     result = v.get_image()[:, :, ::-1]
     file_name = ntpath.basename(clothing_image)
+    # for mark in marks:
+    #     x, y, h, w = mark
+    #     cv2.rectangle(cv2.UMat(result), (x, y), (x + w, y + h), (0, 0, 0), -1)
     write_res = cv2.imwrite(f'{Annotation_folder}/{file_name}', result)
 
 print("Finished Evaluation...")
