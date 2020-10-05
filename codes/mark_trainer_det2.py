@@ -120,17 +120,23 @@ cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_5
 
 cfg.SOLVER.IMS_PER_BATCH = 4
 cfg.SOLVER.BASE_LR = 0.0125
-cfg.SOLVER.MAX_ITER = 1500
+cfg.SOLVER.MAX_ITER = 15000
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256  
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
 cfg.TEST.EVAL_PERIOD = 500
 
 cfg.num_gpus = 1
 cfg.OUTPUT_DIR = OUTPUT_DIR + str(datetime.now())[:-10].replace(":", "_")
+os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 cfg.MODEL.MASK_ON = False
 
+import pickle
+filename = cfg.OUTPUT_DIR + '/config.pkl'
+with open(filename, 'wb') as f:
+     pickle.dump(cfg, f)
+
+
 # --- Start Training
-os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 trainer = CocoTrainer(cfg) 
 trainer.resume_or_load(resume=False)
 trainer.train()
