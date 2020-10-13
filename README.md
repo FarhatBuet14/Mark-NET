@@ -10,6 +10,4 @@
 
 ![Different%20Marks.png](https://github.com/FarhatBuet14/Mark-NET/blob/master/tmp/Reports/6.different%20marks/Different%20Marks.png)
 
-## Training & Test Results
-
 ![result.png](https://github.com/FarhatBuet14/Mark-NET/blob/master/tmp/Reports/9.Final%20Submission/result.png)
