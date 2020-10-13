@@ -3,10 +3,8 @@
 .vscode/
 content/
 outputs/
-logs/
 data/
 models/pretrained/
-tmp/
 *.pth
 *.pyc
 *.ipynb_checkpoints/
