@@ -11,3 +11,14 @@
 ![Different%20Marks.png](https://github.com/FarhatBuet14/Mark-NET/blob/master/tmp/Reports/6.different%20marks/Different%20Marks.png)
 
 ![result.png](https://github.com/FarhatBuet14/Mark-NET/blob/master/tmp/Reports/9.Final%20Submission/result.png)
+
+## Requirements
+* Python 3.6.12
+
+## Installation
+~~~~{.python}
+git clone https://github.com/FarhatBuet14/Mark-NET.git
+cd Mark-NET
+pip install -r requirements.txt
+cd codes
+~~~~
